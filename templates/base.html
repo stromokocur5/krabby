@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html data-theme="lofi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{{title}} - Krabby{% endblock %}</title>
+  <link rel="stylesheet" href="/assets/style.css" />
+  {% block head %}{% endblock %}
+</head>
+
+<body class="font-[Outfit] flex flex-col">
+  {% block content %}{% endblock %}
+</body>
+
+</html>
