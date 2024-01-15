@@ -4,7 +4,7 @@ use tower_http::services::ServeDir;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[derive(Template)]
-#[template(path = "index.html")]
+#[template(path = "routes/index.html")]
 struct Index<'a> {
     route: &'a str,
     logged_in: bool,
