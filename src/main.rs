@@ -33,7 +33,7 @@ async fn main() {
 
 async fn test() -> impl IntoResponse {
     Index {
-        route: "/login",
+        route: "/",
         logged_in: false,
     }
 }

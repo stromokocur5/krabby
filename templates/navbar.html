@@ -7,7 +7,7 @@
   </div>
   <div class="navbar-end">
     {% if route == "/login" && !logged_in %}
-    <ul>
+    <ul class="menu menu-horizontal px-1 text-xl">
       <li>
         <a href="/signup">
           Sign Up
@@ -15,7 +15,7 @@
       </li>
     </ul>
     {% else if route == "/signup" && !logged_in %}
-    <ul class="hidden lg:menu lg:menu-horizontal lg:px-1 lg:text-xl">
+    <ul class="menu menu-horizontal px-1 text-xl">
       <li>
         <a href="/login">
           Log In
