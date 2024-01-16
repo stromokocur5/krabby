@@ -1,7 +1,6 @@
 <div class="navbar bg-base-100">
   <div class="navbar-start">
-    <a href="/"
-      class="btn btn-ghost sm:text-4xl text-3xl text-transparent bg-clip-text bg-gradient-to-br from-primary text-center to-accent">
+    <a href="/" class="btn btn-ghost sm:text-4xl text-3xl text-center">
       Krabby
     </a>
   </div>
@@ -23,7 +22,7 @@
       </li>
     </ul>
     {% else if !logged_in %}
-    <ul class="hidden lg:menu lg:menu-horizontal lg:px-1 lg:text-xl">
+    <ul class="menu menu-horizontal px-1 lg:text-xl">
       <li>
         <a href="/login">
           Log In
@@ -35,11 +34,6 @@
         </a>
       </li>
     </ul>
-    <div tabindex={0} role="button" class="lg:hidden text-xl btn btn-ghost my-1 btn-circle">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
-      </svg>
-    </div>
     {% else %}
     logged in
     {% endif %}
