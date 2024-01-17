@@ -3,14 +3,14 @@ use axum::{extract::OriginalUri, response::IntoResponse};
 
 #[derive(Template)]
 #[template(path = "routes/index.html")]
-struct Index {
+struct Base {
     route: String,
     logged_in: bool,
 }
 
 pub async fn index(uri: OriginalUri) -> impl IntoResponse {
     let uri = uri.path().to_owned();
-    Index {
+    Base {
         route: uri,
         logged_in: false,
     }
