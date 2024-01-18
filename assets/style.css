@@ -1728,6 +1728,11 @@ html {
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .mt-6 {
   margin-top: 1.5rem;
 }
@@ -1758,6 +1763,10 @@ html {
 
 .w-full {
   width: 100%;
+}
+
+.max-w-screen-lg {
+  max-width: 1024px;
 }
 
 .max-w-sm {
@@ -1878,15 +1887,6 @@ html {
 }
 
 @media (min-width: 1024px) {
-  .lg\:mx-auto {
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .lg\:max-w-screen-lg {
-    max-width: 1024px;
-  }
-
   .lg\:flex-row-reverse {
     flex-direction: row-reverse;
   }
