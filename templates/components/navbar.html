@@ -1,11 +1,11 @@
-<div class="navbar bg-base-100 text-neutral max-w-screen-lg mx-auto">
+<div class="navbar bg-base-100">
   <div class="navbar-start">
     <a href="/" class="btn btn-ghost sm:text-4xl text-3xl text-center">
       Krabby
     </a>
   </div>
   <div class="navbar-end">
-    {% if route == "/login" && !logged_in %}
+    {% if base.route == "/login" && !base.logged_in %}
     <ul class="menu menu-horizontal px-1 text-xl">
       <li>
         <a href="/signup">
@@ -13,7 +13,7 @@
         </a>
       </li>
     </ul>
-    {% else if route == "/signup" && !logged_in %}
+    {% else if base.route == "/signup" && !base.logged_in %}
     <ul class="menu menu-horizontal px-1 text-xl">
       <li>
         <a href="/login">
@@ -21,7 +21,7 @@
         </a>
       </li>
     </ul>
-    {% else if !logged_in %}
+    {% else if !base.logged_in %}
     <ul class="menu menu-horizontal px-1 text-base sm:text-xl">
       <li>
         <a href="/login">

@@ -1,17 +1,13 @@
+use crate::components::Base;
 use askama::Template;
-use axum::{extract::OriginalUri, response::IntoResponse};
+use axum::response::IntoResponse;
 
 #[derive(Template)]
 #[template(path = "routes/index.html")]
-struct Base {
-    route: String,
-    logged_in: bool,
+struct Index {
+    base: Base,
 }
 
-pub async fn index(uri: OriginalUri) -> impl IntoResponse {
-    let uri = uri.path().to_owned();
-    Base {
-        route: uri,
-        logged_in: false,
-    }
+pub async fn index(base: Base) -> impl IntoResponse {
+    Index { base }
 }

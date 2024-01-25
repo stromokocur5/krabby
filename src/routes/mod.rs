@@ -1,13 +1,18 @@
 use axum::routing::{delete, get, post, put};
 use axum::Router;
+use std::sync::Arc;
 use tower_http::services::ServeDir;
 
-pub mod index;
-pub mod login;
-pub mod signup;
+use crate::AppState;
 
-pub fn router() -> Router {
+mod index;
+mod login;
+mod signup;
+
+pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(index::index))
+        .route("/login", get(login::login))
+        .route("/signup", get(signup::signup))
         .nest_service("/assets", ServeDir::new("assets"))
 }
