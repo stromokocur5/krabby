@@ -9,3 +9,7 @@ test:
 
 run: 
 	cargo run
+
+watch: 
+	cargo watch -s just
+
