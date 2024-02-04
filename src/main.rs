@@ -1,13 +1,12 @@
 use axum::Router;
 use deadpool_redis::{Config, Runtime};
-use krabby::AppState;
+use krabby::{AppState, Result};
 use sqlx::PgPool;
-use std::env;
-use std::sync::Arc;
+use std::{env, sync::Arc};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<()> {
     let _ = dotenvy::dotenv();
     tracing_subscriber::registry()
         .with(

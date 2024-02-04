@@ -1,3 +1,4 @@
+use crate::database::User;
 use axum::{
     async_trait,
     extract::{FromRequestParts, OriginalUri},
@@ -9,6 +10,7 @@ use axum::{
 pub struct Base {
     pub route: String,
     pub logged_in: bool,
+    pub user: Option<User>,
 }
 
 #[async_trait]
@@ -26,6 +28,7 @@ where
         Ok(Base {
             route: uri.path().to_string(),
             logged_in: false,
+            user: None,
         })
     }
 }
