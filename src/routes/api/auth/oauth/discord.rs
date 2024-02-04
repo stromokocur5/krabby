@@ -96,7 +96,10 @@ pub async fn callback(
         .bearer_auth(token_response.access_token().secret())
         .send()
         .await
-        .context("Failed to get user info")?;
+        .context("Failed to get user info")?
+        .text()
+        .await?;
+    println!("{:?}", discord_user);
 
     // Add user session
     // let account_id = discord_user.id.clone();
