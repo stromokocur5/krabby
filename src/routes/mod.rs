@@ -1,4 +1,4 @@
-use axum::routing::{delete, get, post, put};
+use axum::routing::{get};
 use axum::Router;
 use std::sync::Arc;
 use tower_http::services::ServeDir;

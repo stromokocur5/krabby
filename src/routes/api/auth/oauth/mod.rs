@@ -12,7 +12,7 @@ pub fn router() -> Router<Arc<AppState>> {
 }
 
 #[derive(Debug, serde::Deserialize)]
-struct AuthRequest {
+pub struct AuthRequest {
     pub code: String,
     pub state: String,
 }

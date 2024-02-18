@@ -14,7 +14,7 @@ pub struct SignUpUser;
 pub struct LogInUser;
 
 impl UserSession {
-    async fn verify_session(user_id: String, session_id: String) {}
+    async fn verify_session(_user_id: String, _session_id: String) {}
     async fn log_in() -> Result<User> {
         Ok(User)
     }

@@ -2,7 +2,7 @@ use crate::database::User;
 use axum::{
     async_trait,
     extract::{FromRequestParts, OriginalUri},
-    http::{request::Parts, StatusCode},
+    http::{request::Parts},
     response::{IntoResponse, Response},
     RequestPartsExt,
 };
@@ -20,7 +20,7 @@ where
 {
     type Rejection = Response;
 
-    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
         let OriginalUri(uri) = parts
             .extract::<OriginalUri>()
             .await

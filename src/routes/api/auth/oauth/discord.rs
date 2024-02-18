@@ -11,10 +11,7 @@ use axum_extra::extract::{
 };
 use oauth2::reqwest::async_http_client;
 use oauth2::TokenResponse;
-use oauth2::{
-    basic::BasicClient, AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken,
-    PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, Scope, TokenUrl,
-};
+use oauth2::{AuthorizationCode, CsrfToken, PkceCodeChallenge, PkceCodeVerifier, Scope};
 
 use super::{get_oauth_client, AuthRequest};
 
@@ -28,7 +25,6 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/callback", axum::routing::get(callback))
 }
 
-#[axum::debug_handler]
 pub async fn login() -> Result<impl IntoResponse, AppError> {
     let client = get_oauth_client(NAME, AUTH_URL, TOKEN_URL)
         .context(format!("Failed to create {} auth client", NAME))?;
@@ -90,16 +86,12 @@ pub async fn callback(
         .await
         .context("Failed to get token response")?;
 
-    // Get the Discord user info
     let discord_user = reqwest::Client::new()
         .get("https://discord.com/api/users/@me")
         .bearer_auth(token_response.access_token().secret())
         .send()
         .await
-        .context("Failed to get user info")?
-        .text()
-        .await?;
-    println!("{:?}", discord_user);
+        .context("Failed to get user info")?;
 
     // Add user session
     // let account_id = discord_user.id.clone();
@@ -127,7 +119,6 @@ pub async fn callback(
     // .await
     // .context("Failed to create user session")?;
 
-    // Remove code_verifier and csrf_state cookies
     let mut remove_csrf_cookie = Cookie::new("auth_csrf_state", "");
     remove_csrf_cookie.set_path("/");
     remove_csrf_cookie.make_removal();
@@ -148,6 +139,5 @@ pub async fn callback(
         .add(remove_code_verifier)
         .add(session_cookie);
 
-    let response = (cookies, Redirect::to("/")).into_response();
-    Ok(response)
+    Ok((cookies, Redirect::to("/")).into_response())
 }
