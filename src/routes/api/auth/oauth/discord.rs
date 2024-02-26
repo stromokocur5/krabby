@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::{AppError, AppState};
-use axum::extract::Query;
+use axum::extract::{Query, State};
 use axum::response::IntoResponse;
 use axum::Router;
 use axum_extra::extract::CookieJar;
@@ -24,8 +24,12 @@ pub async fn login() -> Result<impl IntoResponse, AppError> {
 }
 
 pub async fn callback(
+    State(app_state): State<Arc<AppState>>,
     cookies: CookieJar,
     query: Query<AuthRequest>,
 ) -> Result<impl IntoResponse, AppError> {
-    super::callback(cookies, query, NAME, AUTH_URL, TOKEN_URL, USER_API).await
+    super::callback(
+        app_state, cookies, query, NAME, AUTH_URL, TOKEN_URL, USER_API,
+    )
+    .await
 }

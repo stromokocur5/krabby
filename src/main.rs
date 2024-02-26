@@ -19,8 +19,10 @@ async fn main() -> Result<()> {
     let redis_cfg = Config::from_url(env::var("REDIS_URL")?);
     let redis = redis_cfg.create_pool(Some(Runtime::Tokio1))?;
 
-    let pg_cfg = env::var("POSTGRES_URL")?;
+    let pg_cfg = env::var("DATABASE_URL")?;
     let pg = PgPool::connect(&pg_cfg).await?;
+
+    sqlx::migrate!().run(&pg).await?;
 
     let state = AppState { pg, redis };
     let app = Router::new()

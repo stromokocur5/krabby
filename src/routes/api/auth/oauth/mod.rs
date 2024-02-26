@@ -85,6 +85,7 @@ pub fn login(name: &str, auth_url: &str, token_url: &str) -> Result<impl IntoRes
 }
 
 pub async fn callback(
+    app_state: Arc<AppState>,
     cookies: CookieJar,
     Query(query): Query<AuthRequest>,
     name: &str,
@@ -124,6 +125,7 @@ pub async fn callback(
         .send()
         .await
         .context("Failed to get user info")?;
+    println!("{:?}", _user.text().await?);
 
     let mut remove_csrf_cookie = Cookie::new("auth_csrf_state", "");
     remove_csrf_cookie.set_path("/");
