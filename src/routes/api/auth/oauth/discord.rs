@@ -11,6 +11,7 @@ use super::AuthRequest;
 const NAME: &str = "discord";
 const AUTH_URL: &str = "https://discord.com/oauth2/authorize";
 const TOKEN_URL: &str = "https://discord.com/api/oauth2/token";
+const USER_API: &str = "https://discord.com/api/users/@me";
 
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
@@ -26,5 +27,5 @@ pub async fn callback(
     cookies: CookieJar,
     query: Query<AuthRequest>,
 ) -> Result<impl IntoResponse, AppError> {
-    super::callback(cookies, query, NAME, AUTH_URL, TOKEN_URL).await
+    super::callback(cookies, query, NAME, AUTH_URL, TOKEN_URL, USER_API).await
 }

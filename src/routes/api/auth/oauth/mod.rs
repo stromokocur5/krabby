@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::{get_env, AppError, AppState, Context, Result};
+
 use axum::{
     extract::Query,
     http::StatusCode,
@@ -21,7 +22,9 @@ pub mod discord;
 pub mod github;
 
 pub fn router() -> Router<Arc<AppState>> {
-    Router::new().nest("/discord", discord::router())
+    Router::new()
+        .nest("/discord", discord::router())
+        .nest("/github", github::router())
 }
 
 #[derive(Debug, serde::Deserialize)]
@@ -87,6 +90,7 @@ pub async fn callback(
     name: &str,
     auth_url: &str,
     token_url: &str,
+    user_api: &str,
 ) -> Result<impl IntoResponse, AppError> {
     let code = query.code;
     let state = query.state;
@@ -113,8 +117,9 @@ pub async fn callback(
         .await
         .context("Failed to get token response")?;
 
-    let user = reqwest::Client::new()
-        .get("https://discord.com/api/users/@me")
+    let _user = reqwest::Client::new()
+        .get(user_api)
+        .header("User-Agent", "Rust")
         .bearer_auth(token_response.access_token().secret())
         .send()
         .await

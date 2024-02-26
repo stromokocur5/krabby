@@ -1,11 +1,11 @@
-use axum::routing::{get};
+use axum::routing::get;
 use axum::Router;
 use std::sync::Arc;
 use tower_http::services::ServeDir;
 
 use crate::AppState;
 
-mod api;
+pub mod api;
 mod index;
 mod login;
 mod signup;
