@@ -9,27 +9,21 @@
 
 {% block form %}
 <form class="card-body" action="/auth/signup" method="post">
-  <div class="form-control">
-    <label class="label">
-      <span class="label-text">Email</span>
-    </label>
-    <input name="email" type="email" placeholder="email" class="input input-bordered" required />
-  </div>
-  <div class="form-control">
-    <label class="label">
-      <span class="label-text">Password</span>
-    </label>
-    <input name="password" type="password" placeholder="password" class="input input-bordered" required />
-  </div>
-  <div class="form-control">
-    <label class="label">
-      <span class="label-text">Confirm password</span>
-    </label>
-    <input name="confirm" type="password" placeholder="password" class="input input-bordered" required />
-  </div>
+  {% let fields =
+  [
+  ("email".to_owned(),"your@email.com".to_owned(),"required".to_owned(),"".to_owned()),
+  ("password".to_owned(),"********".to_owned(),"required".to_owned(),"".to_owned()),
+  ("password".to_owned(),"********".to_owned(),"required".to_owned(),"".to_owned())
+  ]
+  -%}
+  {% for (name,placeholder,required,custom) in fields %}
+  {% include "../components/field.html" %}
+  {% endfor %}
   {% include "../components/turnstitle.html" %}
-  <div class="form-control mt-6">
+  <div class="form-control mt-4">
     <button class="btn btn-primary">Sign Up</button>
   </div>
 </form>
+<h2 class="text-center font-semibold text-xl">OR</h2>
+{% include "../components/oauth.html" %}
 {% endblock %}

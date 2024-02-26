@@ -9,24 +9,20 @@
 
 {% block form %}
 <form class="card-body" action="/login" method="post">
-  <div class="form-control">
-    <label class="label">
-      <span class="label-text">Email</span>
-    </label>
-    <input name="email" type="email" placeholder="email" class="input input-bordered" required />
-  </div>
-  <div class="form-control">
-    <label class="label">
-      <span class="label-text">Password</span>
-    </label>
-    <input name="password" type="password" placeholder="password" class="input input-bordered" required />
-    <label class="label">
-      <a href="#" class="label-text-alt link link-hover">Forgot password?</a>
-    </label>
-  </div>
+  {% let fields =
+  [
+  ("email".to_owned(),"your@email.com".to_owned(),"required".to_owned(),"".to_owned()),
+  ("password".to_owned(),"********".to_owned(),"required".to_owned(),"<label class=\"label\"><a href=\"#\" class=\"label-text-alt link link-hover\">Forgot password?</a></label>".to_owned())
+  ]
+  -%}
+  {% for (name,placeholder,required,custom) in fields %}
+  {% include "../components/field.html" %}
+  {% endfor %}
   {% include "../components/turnstitle.html" %}
   <div class="form-control mt-6">
     <button class="btn btn-primary">Log In</button>
   </div>
 </form>
+<h2 class="text-center font-semibold text-xl">OR</h2>
+{% include "../components/oauth.html" %}
 {% endblock %}

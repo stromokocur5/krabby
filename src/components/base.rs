@@ -2,7 +2,7 @@ use crate::database::User;
 use axum::{
     async_trait,
     extract::{FromRequestParts, OriginalUri},
-    http::{request::Parts},
+    http::request::Parts,
     response::{IntoResponse, Response},
     RequestPartsExt,
 };
