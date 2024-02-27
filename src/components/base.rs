@@ -1,4 +1,4 @@
-use crate::database::User;
+use crate::database::OAuthUser;
 use axum::{
     async_trait,
     extract::{FromRequestParts, OriginalUri},
@@ -10,7 +10,7 @@ use axum::{
 pub struct Base {
     pub route: String,
     pub logged_in: bool,
-    pub user: Option<User>,
+    pub user: Option<OAuthUser>,
 }
 
 #[async_trait]

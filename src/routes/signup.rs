@@ -11,3 +11,10 @@ struct SignUp {
 pub async fn signup(base: Base) -> impl IntoResponse {
     SignUp { base }
 }
+
+mod filters {
+    pub fn replace_<T: std::fmt::Display>(s: T) -> ::askama::Result<String> {
+        let s = s.to_string();
+        Ok(s.replace("_", " "))
+    }
+}

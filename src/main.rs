@@ -22,7 +22,7 @@ async fn main() -> Result<()> {
     let pg_cfg = env::var("DATABASE_URL")?;
     let pg = PgPool::connect(&pg_cfg).await?;
 
-    sqlx::migrate!().run(&pg).await?;
+    // sqlx::migrate!().run(&pg).await?;
 
     let state = AppState { pg, redis };
     let app = Router::new()
