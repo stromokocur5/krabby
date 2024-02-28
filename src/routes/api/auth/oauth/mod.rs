@@ -24,7 +24,7 @@ pub mod github;
 
 #[macro_export]
 macro_rules! oauth_service {
-    () => {
+    ($func:expr) => {
         use std::sync::Arc;
 
         use crate::{AppError, AppState};
@@ -51,7 +51,7 @@ macro_rules! oauth_service {
             query: Query<AuthRequest>,
         ) -> Result<impl IntoResponse, AppError> {
             super::callback(
-                app_state, cookies, query, NAME, AUTH_URL, TOKEN_URL, USER_API,
+                app_state, cookies, query, NAME, AUTH_URL, TOKEN_URL, USER_API, $func,
             )
             .await
         }
@@ -91,7 +91,6 @@ pub fn login(name: &str, auth_url: &str, token_url: &str) -> Result<impl IntoRes
     let (authorize_url, csrf_state) = client
         .authorize_url(CsrfToken::new_random)
         .add_scope(Scope::new("identify".to_string()))
-        .add_scope(Scope::new("email".to_string()))
         .set_pkce_challenge(pkce_code_challenge)
         .url();
 
@@ -124,6 +123,7 @@ pub async fn callback(
     auth_url: &str,
     token_url: &str,
     user_api: &str,
+    func: fn(Arc<AppState>) -> Result<String>,
 ) -> Result<impl IntoResponse, AppError> {
     let code = query.code;
     let state = query.state;
@@ -160,11 +160,13 @@ pub async fn callback(
         .json::<OAuthUser>()
         .await?;
 
+    func(app_state.clone());
+
     let oauth_type = format!("{}_id", name);
 
     let query = format!(
         "
-        INSERT INTO app_user ({}, username, email, password_hash, avatar_url)
+        INSERT INTO app_user ({}, username, avatar_url)
         VALUES ($1, $2, $3, $4, $5)
         RETURNING id, username, avatar_url;
         ",
@@ -173,7 +175,6 @@ pub async fn callback(
     let users = sqlx::query_as::<_, OAuthUser>(&query)
         .bind(user.id)
         .bind(user.username)
-        .bind("test_email")
         .bind("test_heslo")
         .bind(user.avatar_url)
         .fetch_one(&app_state.pg)

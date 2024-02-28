@@ -1,4 +1,4 @@
-use crate::Result;
+use crate::{AppState, Result};
 use chrono::DateTime;
 use deadpool_redis::Pool as RedisPool;
 use serde::{Deserialize, Deserializer, Serialize};
@@ -10,7 +10,6 @@ pub struct OAuthUser {
     pub id: String,
     #[serde(alias = "login")]
     pub username: String,
-    // pub email: String,
     #[serde(alias = "avatar")]
     pub avatar_url: String,
 }
@@ -35,6 +34,9 @@ pub struct User {
 }
 
 impl User {
+    async fn create_session(app_state: AppState) -> Result<()> {
+        Ok(())
+    }
     async fn verify_session(user_id: String, session_id: String, redis: &RedisPool) -> Result<()> {
         Ok(())
     }
