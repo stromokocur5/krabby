@@ -1,3 +1,4 @@
+use std::future::Future;
 use std::sync::Arc;
 
 use crate::database::OAuthUser;
@@ -13,6 +14,7 @@ use axum_extra::extract::{
     cookie::{Cookie, SameSite},
     CookieJar,
 };
+
 use oauth2::{
     basic::BasicClient, reqwest::async_http_client, AuthUrl, AuthorizationCode, ClientId,
     ClientSecret, CsrfToken, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, Scope,
@@ -115,7 +117,7 @@ pub fn login(name: &str, auth_url: &str, token_url: &str) -> Result<impl IntoRes
     Ok((cookies, Redirect::to(authorize_url.as_str())))
 }
 
-pub async fn callback(
+pub async fn callback<Fut>(
     app_state: Arc<AppState>,
     cookies: CookieJar,
     Query(query): Query<AuthRequest>,
@@ -123,8 +125,11 @@ pub async fn callback(
     auth_url: &str,
     token_url: &str,
     user_api: &str,
-    func: fn(Arc<AppState>) -> Result<String>,
-) -> Result<impl IntoResponse, AppError> {
+    func: impl Fn(Arc<AppState>, OAuthUser) -> Fut,
+) -> Result<impl IntoResponse, AppError>
+where
+    Fut: Future<Output = Result<String>>,
+{
     let code = query.code;
     let state = query.state;
     let stored_state = cookies.get("auth_csrf_state");
@@ -160,26 +165,7 @@ pub async fn callback(
         .json::<OAuthUser>()
         .await?;
 
-    func(app_state.clone());
-
-    let oauth_type = format!("{}_id", name);
-
-    let query = format!(
-        "
-        INSERT INTO app_user ({}, username, avatar_url)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING id, username, avatar_url;
-        ",
-        oauth_type
-    );
-    let users = sqlx::query_as::<_, OAuthUser>(&query)
-        .bind(user.id)
-        .bind(user.username)
-        .bind("test_heslo")
-        .bind(user.avatar_url)
-        .fetch_one(&app_state.pg)
-        .await?;
-    println!("{:?}", users);
+    func(app_state.clone(), user).await?;
 
     let mut remove_csrf_cookie = Cookie::new("auth_csrf_state", "");
     remove_csrf_cookie.set_path("/");

@@ -15,6 +15,7 @@ pub struct OAuthUser {
 }
 
 pub struct SignUpUser {
+    pub username: String,
     pub email: String,
     pub password: String,
     pub confirm_password: String,
@@ -34,22 +35,46 @@ pub struct User {
 }
 
 impl User {
-    async fn create_session(app_state: AppState) -> Result<()> {
+    pub async fn create(user: SignUpUser, pg: &PgPool) -> Result<()> {
         Ok(())
     }
-    async fn verify_session(user_id: String, session_id: String, redis: &RedisPool) -> Result<()> {
+    pub async fn oauth_create(user: OAuthUser, name: &str, pg: &PgPool) -> Result<()> {
+        let oauth_type = format!("{}_id", name);
+
+        let query = format!(
+            "
+        INSERT INTO app_user ({}, username, avatar_url)
+        VALUES ($1, $2, $3)
+        RETURNING id, username, avatar_url;
+        ",
+            oauth_type
+        );
+        let users = sqlx::query_as::<_, OAuthUser>(&query)
+            .bind(user.id)
+            .bind(user.username)
+            .bind(user.avatar_url)
+            .fetch_one(pg)
+            .await?;
+        println!("{:?}", users);
         Ok(())
     }
-    async fn create(user: SignUpUser, pool: &PgPool) -> Result<()> {
+    pub async fn get(user_id: String, pg: &PgPool) -> Result<()> {
         Ok(())
     }
-    async fn delete(user_id: String, pool: &PgPool) -> Result<()> {
+    pub async fn update(user_id: String, pg: &PgPool) -> Result<()> {
         Ok(())
     }
-    async fn get(user_id: String, pool: &PgPool) -> Result<()> {
+    pub async fn delete(user_id: String, pg: &PgPool) -> Result<()> {
         Ok(())
     }
-    async fn update(user_id: String, pool: &PgPool) -> Result<()> {
+    pub async fn create_session(app_state: AppState) -> Result<()> {
+        Ok(())
+    }
+    pub async fn verify_session(
+        user_id: String,
+        session_id: String,
+        redis: &RedisPool,
+    ) -> Result<()> {
         Ok(())
     }
 }
