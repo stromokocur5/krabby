@@ -128,7 +128,7 @@ pub async fn callback<Fut>(
     func: impl Fn(Arc<AppState>, OAuthUser) -> Fut,
 ) -> Result<impl IntoResponse, AppError>
 where
-    Fut: Future<Output = Result<String>>,
+    Fut: Future<Output = Result<(String, String)>>,
 {
     let code = query.code;
     let state = query.state;
@@ -165,7 +165,7 @@ where
         .json::<OAuthUser>()
         .await?;
 
-    func(app_state.clone(), user).await?;
+    let (user_id, session_id) = func(app_state.clone(), user).await?;
 
     let mut remove_csrf_cookie = Cookie::new("auth_csrf_state", "");
     remove_csrf_cookie.set_path("/");
@@ -175,17 +175,25 @@ where
     remove_code_verifier.set_path("/");
     remove_code_verifier.make_removal();
 
-    let session_cookie: Cookie = Cookie::build(("auth_session", "".to_string()))
+    let user_id_cookie: Cookie = Cookie::build(("user_id", user_id))
         .same_site(SameSite::Lax)
         .http_only(true)
         .path("/")
-        .max_age(time::Duration::milliseconds(1000 * 60 * 60 * 24))
+        .max_age(time::Duration::milliseconds(crate::SESSION_LENGTH.into()))
+        .into();
+
+    let session_id_cookie: Cookie = Cookie::build(("session_id", session_id))
+        .same_site(SameSite::Lax)
+        .http_only(true)
+        .path("/")
+        .max_age(time::Duration::milliseconds(crate::SESSION_LENGTH.into()))
         .into();
 
     let cookies = CookieJar::new()
         .add(remove_csrf_cookie)
         .add(remove_code_verifier)
-        .add(session_cookie);
+        .add(user_id_cookie)
+        .add(session_id_cookie);
 
     Ok((cookies, Redirect::to("/")).into_response())
 }

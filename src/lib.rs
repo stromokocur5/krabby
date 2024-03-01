@@ -1,6 +1,6 @@
 pub mod components;
 pub mod database;
-mod routes;
+pub mod routes;
 
 pub use anyhow::{Context, Result};
 pub use axum::async_trait;
@@ -13,6 +13,8 @@ use axum::{
 use deadpool_redis::Pool as RedisPool;
 use sqlx::PgPool;
 
+const SESSION_LENGTH: u32 = 1000 * 60 * 60 * 24;
+
 #[derive(Clone)]
 pub struct AppState {
     pub pg: PgPool,
@@ -20,7 +22,7 @@ pub struct AppState {
 }
 
 #[derive(Debug)]
-struct AppError(anyhow::Error);
+pub struct AppError(anyhow::Error);
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {

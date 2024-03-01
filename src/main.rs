@@ -1,4 +1,4 @@
-use axum::Router;
+use axum::{middleware, Router};
 use deadpool_redis::{Config, Runtime};
 use krabby::{AppState, Result};
 use sqlx::PgPool;
@@ -22,12 +22,15 @@ async fn main() -> Result<()> {
     let pg_cfg = env::var("DATABASE_URL")?;
     let pg = PgPool::connect(&pg_cfg).await?;
 
-    // sqlx::migrate!().run(&pg).await?;
-
     let state = AppState { pg, redis };
+    let state = Arc::new(state);
     let app = Router::new()
         .merge(krabby::router())
-        .with_state(Arc::new(state));
+        .with_state(state.clone())
+        .route_layer(middleware::from_fn_with_state(
+            state.clone(),
+            krabby::routes::api::auth::middleware::auth,
+        ));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     tracing::debug!("listening on {}", listener.local_addr().unwrap());

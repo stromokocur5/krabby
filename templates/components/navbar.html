@@ -35,7 +35,12 @@
       </li>
     </ul>
     {% else %}
-    logged in
+    {% match base.user %}
+    {% when Some with (val) %}
+    <img src={{val.avatar_url}}>
+    {{ val.username }}
+    {% when None %}
+    {% endmatch %}
     {% endif %}
   </div>
 </div>

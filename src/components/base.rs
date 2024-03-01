@@ -1,7 +1,7 @@
-use crate::database::OAuthUser;
+use crate::database::user::BaseUser;
 use axum::{
     async_trait,
-    extract::{FromRequestParts, OriginalUri},
+    extract::{Extension, FromRequestParts, OriginalUri},
     http::request::Parts,
     response::{IntoResponse, Response},
     RequestPartsExt,
@@ -10,7 +10,7 @@ use axum::{
 pub struct Base {
     pub route: String,
     pub logged_in: bool,
-    pub user: Option<OAuthUser>,
+    pub user: Option<BaseUser>,
 }
 
 #[async_trait]
@@ -25,10 +25,16 @@ where
             .extract::<OriginalUri>()
             .await
             .map_err(|err| err.into_response())?;
+        let user = parts
+            .extract::<Extension<Option<BaseUser>>>()
+            .await
+            .map_err(|err| err.into_response())?
+            .0;
+        let logged_in = user.is_some();
         Ok(Base {
             route: uri.path().to_string(),
-            logged_in: false,
-            user: None,
+            logged_in,
+            user,
         })
     }
 }
