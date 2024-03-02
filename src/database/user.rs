@@ -174,7 +174,7 @@ impl User {
     }
 }
 
-pub fn deserialize_string_from_number<'de, D>(deserializer: D) -> Result<String, D::Error>
+fn deserialize_string_from_number<'de, D>(deserializer: D) -> Result<String, D::Error>
 where
     D: Deserializer<'de>,
 {

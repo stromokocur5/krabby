@@ -1,5 +1,4 @@
-use crate::database::user::User;
-use crate::database::OAuthUser;
+use crate::database::{OAuthUser, User};
 use crate::oauth_service;
 use crate::Result;
 

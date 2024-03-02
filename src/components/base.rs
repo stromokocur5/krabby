@@ -1,4 +1,4 @@
-use crate::database::user::BaseUser;
+use crate::database::BaseUser;
 use axum::{
     async_trait,
     extract::{Extension, FromRequestParts, OriginalUri},

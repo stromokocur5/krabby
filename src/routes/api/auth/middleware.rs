@@ -9,7 +9,7 @@ use axum::{
 use axum_extra::extract::CookieJar;
 
 use crate::{
-    database::user::{BaseUser, User},
+    database::{BaseUser, User},
     AppState,
 };
 

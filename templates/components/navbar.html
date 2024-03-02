@@ -1,4 +1,4 @@
-<div class="navbar bg-base-100">
+<div class="navbar bg-base-100 py-4">
   <div class="navbar-start">
     <a href="/" class="btn btn-ghost sm:text-4xl text-3xl text-center">
       Krabby
@@ -37,8 +37,11 @@
     {% else %}
     {% match base.user %}
     {% when Some with (val) %}
-    <img src={{val.avatar_url}}>
-    {{ val.username }}
+    <div class="avatar">
+      <div class="w-12 rounded-xl border-black border-solid border-2">
+        <img src={{val.avatar_url}}>
+      </div>
+    </div>
     {% when None %}
     {% endmatch %}
     {% endif %}
