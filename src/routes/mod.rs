@@ -13,9 +13,8 @@ use crate::components::Base;
 use crate::AppState;
 
 pub mod api;
+mod auth;
 mod index;
-mod login;
-mod signup;
 
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
@@ -27,8 +26,8 @@ pub fn router() -> Router<Arc<AppState>> {
 
 pub fn static_router() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/login", get(login::login))
-        .route("/signup", get(signup::signup))
+        .route("/login", get(auth::auth))
+        .route("/signup", get(auth::auth))
         .route_layer(middleware::from_fn(redirect_logged))
 }
 

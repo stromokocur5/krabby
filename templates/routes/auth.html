@@ -1,7 +1,7 @@
 {% extends "../components/form.html" %}
 
-{% block hero_content%}
-<h1 class="text-5xl font-bold">Sign Up now!</h1>
+{% block hero_content %}
+<h1 class="text-5xl font-bold">Log In now!</h1>
 <p class="py-6">Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi exercitationem
   quasi.
   In deleniti eaque aut repudiandae et a id nisi.</p>
@@ -9,19 +9,22 @@
 
 {% block form %}
 <div class="flex flex-col w-full border-opacity-50">
-  <form class="card-body" action="/auth/signup" method="post">
-    {% let fields =
-    [
-    ("email".to_owned(),"your@email.com".to_owned(),"required".to_owned(),"".to_owned()),
-    ("password".to_owned(),"********".to_owned(),"required".to_owned(),"".to_owned())
-    ]
-    -%}
-    {% for (name,placeholder,required,custom) in fields %}
+
+  <form class="card-body" action="{{ self::format_action(base.route) }}" method="post">
+
+    {% for (name, placeholder, required, custom) in fields %}
     {% include "../components/field.html" %}
     {% endfor %}
+
     {% include "../components/turnstitle.html" %}
-    <div class="form-control mt-4">
+
+    <div class="form-control mt-6">
+      {%if base.route == "/login"%}
+      <button class="btn btn-primary">Log In</button>
+      {% else if base.route == "/signup" %}
       <button class="btn btn-primary">Sign Up</button>
+      {% else %}
+      {% endif%}
     </div>
   </form>
   <div class="divider">OR</div>
