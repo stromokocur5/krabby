@@ -48,8 +48,9 @@ pub struct User {
     pub username: String,
     pub email: Option<String>,
     pub password_hash: Option<String>,
-    pub avatar_url: Option<String>,
-    pub created_at: DateTime<chrono::Local>,
+    pub avatar_url: String,
+    pub bio: Option<String>,
+    pub created_at: chrono::NaiveDateTime,
 }
 
 impl User {
@@ -102,8 +103,11 @@ impl User {
         tracing::debug!(?user);
         Ok(user_id.id)
     }
-    pub async fn get(user_id: &str, pg: &PgPool) -> Result<()> {
-        Ok(())
+    pub async fn get(conditions: &str, pg: &PgPool) -> Result<User> {
+        let query = format!("SELECT * FROM app_user WHERE {conditions};");
+        let user = sqlx::query_as::<_, User>(&query).fetch_one(pg).await?;
+
+        Ok(user)
     }
 
     pub async fn get_base(user_id: &str, pg: &PgPool) -> Result<BaseUser> {

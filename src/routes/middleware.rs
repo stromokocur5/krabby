@@ -8,10 +8,7 @@ use axum::{
 };
 use axum_extra::extract::CookieJar;
 
-use crate::{
-    database::{BaseUser, User},
-    AppState,
-};
+use crate::{database::User, AppState};
 
 pub async fn auth(
     State(app_state): State<Arc<AppState>>,
@@ -30,17 +27,17 @@ pub async fn auth(
             .is_ok();
         match logged_in {
             true => {
-                let user = User::get_base(&user_id, &app_state.pg).await;
+                let user = User::get(format!("id='{}'", user_id).as_str(), &app_state.pg).await;
                 if let Ok(user) = user {
-                    extensions.insert::<Option<BaseUser>>(Some(user));
+                    extensions.insert::<Option<User>>(Some(user));
                 }
             }
             false => {
-                extensions.insert::<Option<BaseUser>>(None);
+                extensions.insert::<Option<User>>(None);
             }
         };
     } else {
-        extensions.insert::<Option<BaseUser>>(None);
+        extensions.insert::<Option<User>>(None);
     };
     Ok(next.run(req).await)
 }

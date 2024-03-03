@@ -1,0 +1,9 @@
+{% extends "../base_nav_footer.html" %}
+
+{% block title %}{{user.username}}{% endblock %}
+
+{% block content %}
+{{user.avatar_url}}
+{{user.username}}
+{{user.created_at}}
+{% endblock %}

@@ -1,4 +1,4 @@
-use axum::{middleware, Router};
+use axum::{middleware, routing::get, Router};
 use deadpool_redis::{Config, Runtime};
 use krabby::{AppState, Result};
 use sqlx::PgPool;
@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
         .with_state(state.clone())
         .route_layer(middleware::from_fn_with_state(
             state.clone(),
-            krabby::routes::api::auth::middleware::auth,
+            krabby::routes::middleware::auth,
         ));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();

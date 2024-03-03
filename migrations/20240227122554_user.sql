@@ -5,6 +5,7 @@ CREATE TABLE app_user (
     email VARCHAR(64) UNIQUE,
     password_hash VARCHAR(128),
     username VARCHAR(39) UNIQUE NOT NULL,
+    bio VARCHAR(128),
     avatar_url VARCHAR(256) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
