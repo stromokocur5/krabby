@@ -8,7 +8,7 @@ use axum::{
     Router,
 };
 
-use crate::{components::Base, database::User, AppError, AppState};
+use crate::{components::Base, database::User, AppState};
 
 use super::NotFound;
 

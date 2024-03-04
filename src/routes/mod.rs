@@ -10,7 +10,7 @@ mod api;
 mod auth;
 mod index;
 pub mod middleware;
-pub mod not_found;
+mod not_found;
 mod users;
 
 pub fn router() -> Router<Arc<AppState>> {

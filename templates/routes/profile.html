@@ -3,7 +3,11 @@
 {% block title %}{{user.username}}{% endblock %}
 
 {% block content %}
-{{user.avatar_url}}
-{{user.username}}
-{{user.created_at}}
+<div class="avatar mx-auto">
+  <div class="max-w-40 rounded-xl border-black border-solid border-2">
+    <img src={{user.avatar_url}}>
+  </div>
+</div>
+<h1 class="text-lg mx-auto">{{user.username}}</h1>
+<h1 class="text-lg mx-auto">{{user.created_at.date()}}</h1>
 {% endblock %}

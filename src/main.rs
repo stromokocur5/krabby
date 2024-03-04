@@ -1,4 +1,4 @@
-use axum::{middleware, routing::get, Router};
+use axum::{middleware, Router};
 use deadpool_redis::{Config, Runtime};
 use krabby::{AppState, Result};
 use sqlx::PgPool;
