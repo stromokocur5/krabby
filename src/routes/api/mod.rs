@@ -1,11 +1,22 @@
 use std::sync::Arc;
 
-use axum::Router;
+use axum::{middleware, Router};
 
 use crate::AppState;
 
-pub mod auth;
+mod auth;
+mod post;
 
 pub fn router() -> Router<Arc<AppState>> {
-    Router::new().nest("/auth", auth::router())
+    Router::new()
+        .nest("/auth", auth::router())
+        .merge(authorized_only())
+}
+
+fn authorized_only() -> Router<Arc<AppState>> {
+    Router::new()
+        .nest("/post", post::router())
+        .layer(middleware::from_fn(
+            crate::routes::middleware::only_authorized,
+        ))
 }

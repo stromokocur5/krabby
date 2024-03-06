@@ -8,7 +8,11 @@ use axum::{
     Router,
 };
 
-use crate::{components::Base, database::User, AppState};
+use crate::{
+    components::Base,
+    database::{Post, User},
+    AppState,
+};
 
 use super::NotFound;
 
@@ -18,8 +22,9 @@ pub fn router() -> Router<Arc<AppState>> {
 #[derive(Template)]
 #[template(path = "routes/profile.html")]
 struct UserProfile {
-    user: User,
     base: Base,
+    user: User,
+    posts: Vec<Post>,
 }
 async fn user_profile(
     State(app_state): State<Arc<AppState>>,
@@ -28,7 +33,15 @@ async fn user_profile(
 ) -> Result<impl IntoResponse, impl IntoResponse> {
     let user = User::get(format!("username='{username}'").as_str(), &app_state.pg).await;
     match user {
-        Ok(user) => return Ok(UserProfile { user, base }),
+        Ok(user) => {
+            let posts = Post::get_all(&username, &app_state.pg).await;
+            let posts = match posts {
+                Ok(posts) => posts,
+                Err(_) => vec![],
+            };
+
+            return Ok(UserProfile { base, user, posts });
+        }
         Err(_) => return Err((axum::http::StatusCode::NOT_FOUND, NotFound { base })),
     }
 }

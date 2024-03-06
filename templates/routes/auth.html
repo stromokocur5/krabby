@@ -1,10 +1,18 @@
 {% extends "../components/form.html" %}
 
 {% block hero_content %}
-<h1 class="text-5xl font-bold">Log In now!</h1>
+
+{%if base.route == "/login"%}
+<h1 class="text-5xl font-bold">Log in now!</h1>
 <p class="py-6">Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi exercitationem
   quasi.
   In deleniti eaque aut repudiandae et a id nisi.</p>
+{% else if base.route == "/signup" %}
+<h1 class="text-5xl font-bold">Sign up now!</h1>
+<p class="py-6">Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi exercitationem
+  quasi.
+  In deleniti eaque aut repudiandae et a id nisi.</p>
+{% endif%}
 {% endblock %}
 
 {% block form %}
@@ -23,7 +31,6 @@
       <button class="btn btn-primary">Log In</button>
       {% else if base.route == "/signup" %}
       <button class="btn btn-primary">Sign Up</button>
-      {% else %}
       {% endif%}
     </div>
   </form>

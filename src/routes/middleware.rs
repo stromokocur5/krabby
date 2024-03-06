@@ -5,6 +5,7 @@ use axum::{
     http::StatusCode,
     middleware::Next,
     response::Response,
+    Extension,
 };
 use axum_extra::extract::CookieJar;
 
@@ -39,5 +40,16 @@ pub async fn auth(
     } else {
         extensions.insert::<Option<User>>(None);
     };
+    Ok(next.run(req).await)
+}
+
+pub async fn only_authorized(
+    Extension(user): Extension<Option<User>>,
+    req: Request,
+    next: Next,
+) -> Result<Response, StatusCode> {
+    if user.is_none() {
+        return Err(StatusCode::UNAUTHORIZED);
+    }
     Ok(next.run(req).await)
 }
