@@ -4,7 +4,8 @@
 
 {% block content %}
 {% if base.logged_in %}
-<form action="/api/post/create" method="post">
+<h1 class="mx-auto text-lg">New post</h1>
+<form action="/api/post/create" method="post" class="mx-auto">
   <input type="text" name="content" placeholder="Type here" class="input input-bordered w-full max-w-xs" />
 </form>
 {% endif %}
