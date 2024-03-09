@@ -10,6 +10,20 @@ pub struct BaseUser {
     pub username: String,
     pub avatar_url: String,
 }
+#[derive(sqlx::FromRow, Debug)]
+struct Exists {
+    exists: Option<bool>,
+}
+#[derive(sqlx::FromRow)]
+struct Id {
+    id: String,
+}
+
+#[derive(sqlx::FromRow)]
+struct IdPass {
+    id: String,
+    password_hash: String,
+}
 
 #[derive(Deserialize, Debug, sqlx::FromRow, Clone)]
 pub struct OAuthUser {
@@ -24,9 +38,8 @@ pub struct OAuthUser {
 #[derive(Deserialize)]
 pub struct SignUpUser {
     pub username: String,
-    pub email: String,
+    pub email: Option<String>,
     pub password: String,
-    pub confirm_password: String,
     #[serde(alias = "cf-turnstile-response")]
     pub cf_turnstile_response: String,
 }
@@ -53,32 +66,64 @@ pub struct User {
 }
 
 impl User {
-    pub async fn create(user: SignUpUser, pg: &PgPool) -> Result<String> {
-        Ok("".into())
-    }
-    pub async fn oauth_create(user: OAuthUser, name: &str, pg: &PgPool) -> Result<String> {
-        #[derive(sqlx::FromRow)]
-        struct Id {
-            id: String,
+    pub async fn create(user: &SignUpUser, pg: &PgPool) -> Result<String> {
+        if let Ok(_) = User::exists("username", &user.username, pg).await {
+            return Err(anyhow!("user already exists"));
         }
+        if let Some(email) = &user.email {
+            if let Ok(_) = User::exists("email", &email, pg).await {
+                return Err(anyhow!("email already exists"));
+            }
+        }
+        let password_hash = pwhash::bcrypt::hash(user.password.to_string())?;
+        let query = "
+            INSERT INTO app_user (username, password_hash,avatar_url)
+            VALUES ($1, $2,'/assets/ferris.png')
+            RETURNING id;
+            ";
 
+        let user_id = sqlx::query_as::<_, Id>(&query)
+            .bind(user.username.to_string())
+            .bind(password_hash)
+            .fetch_one(pg)
+            .await?;
+        Ok(user_id.id)
+    }
+    pub async fn verify(user: &LogInUser, pg: &PgPool) -> Result<String> {
+        if let Err(_) = User::exists("username", &user.username, pg).await {
+            return Err(anyhow!("user doesnt exist"));
+        }
+        let query = format!(
+            "
+            SELECT id,password_hash FROM app_user WHERE username=$1;
+            ",
+        );
+
+        let user_id = sqlx::query_as::<_, IdPass>(&query)
+            .bind(user.username.to_string())
+            .fetch_one(pg)
+            .await?;
+        let password_hash = pwhash::bcrypt::verify(&user.password, &user_id.password_hash);
+        if !password_hash {
+            return Err(anyhow!("password does not match"));
+        }
+        Ok(user_id.id)
+    }
+    pub async fn oauth_create(user: &OAuthUser, name: &str, pg: &PgPool) -> Result<String> {
         let oauth_type = format!("{}_id", name);
         let mut user = user.clone();
 
         if let Ok(_) = User::exists(&oauth_type, &user.id, pg).await {
-            tracing::debug!("have an account");
             let query = format!("SELECT id FROM app_user WHERE {} = $1;", oauth_type);
 
             let user_id = sqlx::query_as::<_, Id>(&query)
                 .bind(user.id.clone())
                 .fetch_one(pg)
                 .await?;
-            tracing::debug!(?user);
             return Ok(user_id.id);
         }
 
         if let Ok(_) = User::exists("username", &user.username, pg).await {
-            tracing::debug!("username collision");
             let rand1 = rand::random::<u8>();
             let rand2 = rand::random::<u8>();
             user.username = format!("{}{}{}", rand1, user.username, rand2);
@@ -128,11 +173,6 @@ impl User {
         Ok(())
     }
     pub async fn exists(key: &str, value: &str, pg: &PgPool) -> Result<()> {
-        #[derive(sqlx::FromRow, Debug)]
-        struct Exists {
-            exists: Option<bool>,
-        }
-
         let query = sqlx::query_as::<_, Exists>(
             format!("SELECT EXISTS (SELECT 1 FROM app_user WHERE {} = $1)", key).as_str(),
         )

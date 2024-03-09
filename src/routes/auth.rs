@@ -25,8 +25,8 @@ pub async fn auth(base: Base) -> impl IntoResponse {
     let mut fields: Vec<(String, String, String, String)> = vec![];
     if base.route == "/login" {
         fields.push((
-            "email".to_owned(),
-            "your@email.com".to_owned(),
+            "username".to_owned(),
+            "real".to_owned(),
             "required".to_owned(),
             "".to_owned(),
         ));
@@ -39,8 +39,8 @@ pub async fn auth(base: Base) -> impl IntoResponse {
     }
     if base.route == "/signup" {
         fields.push((
-            "email".to_owned(),
-            "your@email.com".to_owned(),
+            "username".to_owned(),
+            "real".to_owned(),
             "required".to_owned(),
             "".to_owned(),
         ));

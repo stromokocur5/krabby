@@ -4,7 +4,7 @@ use anyhow::anyhow;
 
 use crate::{get_env, Result};
 
-pub async fn verify_turnstitle(token: String, ip: std::net::IpAddr) -> Result<()> {
+pub async fn verify_turnstitle(token: &str, ip: std::net::IpAddr) -> Result<()> {
     #[derive(serde::Deserialize)]
     struct Turnstitle {
         success: bool,

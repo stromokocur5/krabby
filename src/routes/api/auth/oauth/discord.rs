@@ -13,7 +13,7 @@ pub async fn func(app_state: Arc<AppState>, user: OAuthUser) -> Result<(String, 
         "https://cdn.discordapp.com/avatars/{}/{}.png",
         user.id, user.avatar_url
     );
-    let user_id = User::oauth_create(user, NAME, &app_state.pg).await?;
+    let user_id = User::oauth_create(&user, NAME, &app_state.pg).await?;
     let session_id = User::create_session(&user_id, &app_state.redis).await?;
 
     tracing::debug!(user_id, session_id);
