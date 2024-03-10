@@ -1,5 +1,5 @@
-use crate::Result;
-use anyhow::anyhow;
+use crate::{errors::PasswordError, AppError, Result};
+use anyhow::{anyhow, Context};
 use deadpool_redis::redis::cmd as redis_cmd;
 use deadpool_redis::Pool as RedisPool;
 use serde::{Deserialize, Deserializer, Serialize};
@@ -22,7 +22,7 @@ struct Id {
 #[derive(sqlx::FromRow)]
 struct IdPass {
     id: String,
-    password_hash: String,
+    password_hash: Option<String>,
 }
 
 #[derive(Deserialize, Debug, sqlx::FromRow, Clone)]
@@ -66,16 +66,20 @@ pub struct User {
 }
 
 impl User {
-    pub async fn create(user: &SignUpUser, pg: &PgPool) -> Result<String> {
+    pub async fn create(user: &SignUpUser, pg: &PgPool) -> Result<String, AppError> {
+        if user.password.is_empty() {
+            return Err(PasswordError::Blank.into());
+        }
         if let Ok(_) = User::exists("username", &user.username, pg).await {
-            return Err(anyhow!("user already exists"));
+            return Err(anyhow!("user already exists").into());
         }
         if let Some(email) = &user.email {
             if let Ok(_) = User::exists("email", &email, pg).await {
-                return Err(anyhow!("email already exists"));
+                return Err(anyhow!("email already exists").into());
             }
         }
-        let password_hash = pwhash::bcrypt::hash(user.password.to_string())?;
+        let password_hash =
+            pwhash::bcrypt::hash(user.password.to_string()).context("failed to hash password")?;
         let query = "
             INSERT INTO app_user (username, password_hash,avatar_url)
             VALUES ($1, $2,'/assets/ferris.png')
@@ -86,12 +90,13 @@ impl User {
             .bind(user.username.to_string())
             .bind(password_hash)
             .fetch_one(pg)
-            .await?;
+            .await
+            .context("failed to fetch user")?;
         Ok(user_id.id)
     }
-    pub async fn verify(user: &LogInUser, pg: &PgPool) -> Result<String> {
+    pub async fn verify(user: &LogInUser, pg: &PgPool) -> Result<String, AppError> {
         if let Err(_) = User::exists("username", &user.username, pg).await {
-            return Err(anyhow!("user doesnt exist"));
+            return Err(anyhow!("user doesnt exist").into());
         }
         let query = format!(
             "
@@ -102,10 +107,14 @@ impl User {
         let user_id = sqlx::query_as::<_, IdPass>(&query)
             .bind(user.username.to_string())
             .fetch_one(pg)
-            .await?;
-        let password_hash = pwhash::bcrypt::verify(&user.password, &user_id.password_hash);
+            .await
+            .context("failed to fetch user")?;
+        if let None = user_id.password_hash {
+            return Err(PasswordError::Blank.into());
+        }
+        let password_hash = pwhash::bcrypt::verify(&user.password, &user_id.password_hash.unwrap());
         if !password_hash {
-            return Err(anyhow!("password does not match"));
+            return Err(anyhow!("password does not match").into());
         }
         Ok(user_id.id)
     }

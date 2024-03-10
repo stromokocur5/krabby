@@ -1,8 +1,9 @@
 use std::{net::Ipv4Addr, sync::Arc};
 
+use anyhow::Context;
 use axum::{
-    extract::{Request, State},
-    http::HeaderMap,
+    extract::State,
+    http::{HeaderMap, HeaderValue},
     response::{IntoResponse, Redirect},
     Form,
 };
@@ -26,10 +27,12 @@ pub async fn signup(
     let user_id = User::create(&user, &app_state.pg).await?;
     let ip: Ipv4Addr = headers
         .get("CF-Connecting-IP")
-        .unwrap()
-        .to_str()?
+        .unwrap_or(&HeaderValue::from_str("0.0.0.0").context("Header value parse error")?)
+        .to_str()
+        .context("Header value parse error")?
         .to_owned()
-        .parse()?;
+        .parse()
+        .context("Header value parse error")?;
     cloudflare::verify_turnstitle(&user.cf_turnstile_response, ip.into()).await?;
     let session_id = User::create_session(&user_id, &app_state.redis).await?;
     let user_id_cookie: Cookie = Cookie::build(("user_id", user_id))

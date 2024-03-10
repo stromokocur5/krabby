@@ -1,23 +1,17 @@
 use crate::{database::LogInUser, Result};
-use axum::response::IntoResponse;
+use axum::{http::HeaderValue, response::IntoResponse};
 
 use std::{net::Ipv4Addr, sync::Arc};
 
-use axum::{
-    extract::{Request, State},
-    http::HeaderMap,
-    response::Redirect,
-    Form,
-};
+use anyhow::Context;
+
+use axum::{extract::State, http::HeaderMap, response::Redirect, Form};
 use axum_extra::extract::{
     cookie::{Cookie, SameSite},
     CookieJar,
 };
 
-use crate::{
-    database::{SignUpUser, User},
-    AppError, AppState,
-};
+use crate::{database::User, AppError, AppState};
 
 use super::cloudflare;
 
@@ -29,10 +23,12 @@ pub async fn login(
     let user_id = User::verify(&user, &app_state.pg).await?;
     let ip: Ipv4Addr = headers
         .get("CF-Connecting-IP")
-        .unwrap()
-        .to_str()?
+        .unwrap_or(&HeaderValue::from_str("0.0.0.0").context("Header value parse error")?)
+        .to_str()
+        .context("Header value parse error")?
         .to_owned()
-        .parse()?;
+        .parse()
+        .context("Header value parse error")?;
     cloudflare::verify_turnstitle(&user.cf_turnstile_response, ip.into()).await?;
     let session_id = User::create_session(&user_id, &app_state.redis).await?;
     let user_id_cookie: Cookie = Cookie::build(("user_id", user_id))

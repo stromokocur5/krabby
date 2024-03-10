@@ -21,6 +21,6 @@ pub async fn verify_turnstitle(token: &str, ip: std::net::IpAddr) -> Result<()> 
     let resp = resp.json::<Turnstitle>().await?;
     match resp.success {
         true => Ok(()),
-        false => Err(anyhow!("failed to verify turnstitle")),
+        false => Err(anyhow!("failed to verify turnstitle").into()),
     }
 }

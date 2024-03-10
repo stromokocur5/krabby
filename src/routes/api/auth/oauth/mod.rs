@@ -163,7 +163,8 @@ where
         .await
         .context("Failed to get user info")?
         .json::<OAuthUser>()
-        .await?;
+        .await
+        .context("Failed to get user")?;
 
     let (user_id, session_id) = func(app_state.clone(), user).await?;
 
