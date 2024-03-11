@@ -1,4 +1,7 @@
-use crate::{errors::PasswordError, AppError, Result};
+use crate::{
+    errors::{PasswordError, UserError},
+    AppError, Result,
+};
 use anyhow::{anyhow, Context};
 use deadpool_redis::redis::cmd as redis_cmd;
 use deadpool_redis::Pool as RedisPool;
@@ -96,7 +99,7 @@ impl User {
     }
     pub async fn verify(user: &LogInUser, pg: &PgPool) -> Result<String, AppError> {
         if let Err(_) = User::exists("username", &user.username, pg).await {
-            return Err(anyhow!("user doesnt exist").into());
+            return Err(UserError::DoesNotExist.into());
         }
         let query = format!(
             "
@@ -104,19 +107,19 @@ impl User {
             ",
         );
 
-        let user_id = sqlx::query_as::<_, IdPass>(&query)
+        let id_pass = sqlx::query_as::<_, IdPass>(&query)
             .bind(user.username.to_string())
             .fetch_one(pg)
             .await
             .context("failed to fetch user")?;
-        if let None = user_id.password_hash {
-            return Err(PasswordError::Blank.into());
+        if let None = id_pass.password_hash {
+            return Err(UserError::NoPasswordUser.into());
         }
-        let password_hash = pwhash::bcrypt::verify(&user.password, &user_id.password_hash.unwrap());
+        let password_hash = pwhash::bcrypt::verify(&user.password, &id_pass.password_hash.unwrap());
         if !password_hash {
-            return Err(anyhow!("password does not match").into());
+            return Err(PasswordError::DoesNotMatch.into());
         }
-        Ok(user_id.id)
+        Ok(id_pass.id)
     }
     pub async fn oauth_create(user: &OAuthUser, name: &str, pg: &PgPool) -> Result<String> {
         let oauth_type = format!("{}_id", name);
@@ -195,7 +198,7 @@ impl User {
             None => Err(anyhow!("something went wrong")),
         }
     }
-    pub async fn create_session(user_id: &str, redis: &RedisPool) -> Result<String> {
+    pub async fn create_session(user_id: &str, redis: &RedisPool) -> Result<String, AppError> {
         let mut redis = redis.get().await?;
         let session_id = uuid::Builder::from_random_bytes(rand::random())
             .into_uuid()
@@ -212,7 +215,11 @@ impl User {
             .await?;
         Ok(session_id)
     }
-    pub async fn verify_session(user_id: &str, session_id: &str, redis: &RedisPool) -> Result<()> {
+    pub async fn verify_session(
+        user_id: &str,
+        session_id: &str,
+        redis: &RedisPool,
+    ) -> Result<(), AppError> {
         let mut redis = redis.get().await?;
         let result: u8 = redis_cmd("SISMEMBER")
             .arg(user_id)
@@ -221,7 +228,7 @@ impl User {
             .await?;
         match result {
             1 => Ok(()),
-            _ => Err(anyhow!("not valid session id")),
+            _ => Err(UserError::SessionIdNotValid.into()),
         }
     }
 }

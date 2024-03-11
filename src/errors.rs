@@ -12,10 +12,18 @@ pub enum AppError {
     EmailError(#[from] EmailError),
     #[error("Invalid password: {0}")]
     PasswordError(#[from] PasswordError),
+    #[error("User error: {0}")]
+    UserError(#[from] UserError),
     #[error("Post error: {0}")]
     PostError(#[from] PostError),
     #[error("Turnstile error: {0}")]
     TurnstileError(#[from] TurnstileError),
+    #[error("Redis error: {0}")]
+    RedisError(#[from] deadpool_redis::redis::RedisError),
+    #[error("Redis pool error: {0}")]
+    RedisPoolError(#[from] deadpool::managed::PoolError<deadpool_redis::redis::RedisError>),
+    // #[error("Database error: {0}")]
+    // DatabaseError(#[from] DatabaseError),
     #[error("Unknown error: {0}")]
     Unknown(#[source] anyhow::Error),
 }
@@ -30,6 +38,7 @@ impl IntoResponse for AppError {
             AppError::PasswordError(_) => {
                 (StatusCode::BAD_REQUEST, self.to_string()).into_response()
             }
+            AppError::UserError(_) => (StatusCode::BAD_REQUEST, self.to_string()).into_response(),
             AppError::PostError(_) => (StatusCode::BAD_REQUEST, self.to_string()).into_response(),
             AppError::TurnstileError(_) => {
                 (StatusCode::BAD_REQUEST, self.to_string()).into_response()
@@ -68,8 +77,18 @@ pub enum PasswordError {
     TooShort,
     #[error("Password is too long")]
     TooLong,
-    #[error("User does not have password")]
+    #[error("Password does not match")]
+    DoesNotMatch,
+}
+
+#[derive(Error, Debug)]
+pub enum UserError {
+    #[error("User does not have a password")]
     NoPasswordUser,
+    #[error("User does not exist")]
+    DoesNotExist,
+    #[error("Session id is not valid")]
+    SessionIdNotValid,
 }
 
 #[derive(Error, Debug)]

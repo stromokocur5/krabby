@@ -1150,6 +1150,7 @@ dependencies = [
  "axum",
  "axum-extra",
  "chrono",
+ "deadpool",
  "deadpool-redis",
  "dotenvy",
  "oauth2",
