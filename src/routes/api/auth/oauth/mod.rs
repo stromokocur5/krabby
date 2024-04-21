@@ -1,7 +1,7 @@
 use std::future::Future;
 use std::sync::Arc;
 
-use crate::database::OAuthUser;
+use crate::database::{OAuthUser, User};
 use crate::{get_env, AppError, AppState, Context, Result};
 
 use axum::{
@@ -26,7 +26,7 @@ pub mod github;
 
 #[macro_export]
 macro_rules! oauth_service {
-    ($func:expr) => {
+    ($modify_user:expr) => {
         use std::sync::Arc;
 
         use crate::{AppError, AppState};
@@ -53,7 +53,14 @@ macro_rules! oauth_service {
             query: Query<AuthRequest>,
         ) -> Result<impl IntoResponse, AppError> {
             super::callback(
-                app_state, cookies, query, NAME, AUTH_URL, TOKEN_URL, USER_API, $func,
+                app_state,
+                cookies,
+                query,
+                NAME,
+                AUTH_URL,
+                TOKEN_URL,
+                USER_API,
+                $modify_user,
             )
             .await
         }
@@ -125,10 +132,10 @@ pub async fn callback<Fut>(
     auth_url: &str,
     token_url: &str,
     user_api: &str,
-    func: impl Fn(Arc<AppState>, OAuthUser) -> Fut,
+    modify_user: impl Fn(OAuthUser) -> Fut,
 ) -> Result<impl IntoResponse, AppError>
 where
-    Fut: Future<Output = Result<(String, String)>>,
+    Fut: Future<Output = OAuthUser>,
 {
     let code = query.code;
     let state = query.state;
@@ -166,7 +173,12 @@ where
         .await
         .context("Failed to get user")?;
 
-    let (user_id, session_id) = func(app_state.clone(), user).await?;
+    let user = modify_user(user).await;
+
+    let user_id = User::oauth_create(&user, name, &app_state.pg).await?;
+    let session_id = User::create_session(&user_id, &app_state.redis).await?;
+
+    tracing::debug!(user_id, session_id);
 
     let mut remove_csrf_cookie = Cookie::new("auth_csrf_state", "");
     remove_csrf_cookie.set_path("/");

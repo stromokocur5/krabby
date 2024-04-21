@@ -1,5 +1,5 @@
 use crate::{
-    errors::{PasswordError, UserError},
+    errors::{EmailError, PasswordError, UserError, UserNameError},
     AppError, Result,
 };
 use anyhow::{anyhow, Context};
@@ -70,15 +70,38 @@ pub struct User {
 
 impl User {
     pub async fn create(user: &SignUpUser, pg: &PgPool) -> Result<String, AppError> {
-        if user.password.is_empty() {
-            return Err(PasswordError::Blank.into());
-        }
+        match user.username.clone() {
+            x if x.is_empty() => {
+                return Err(UserNameError::Blank.into());
+            }
+            x if x.len() < 4 => {
+                return Err(UserNameError::TooShort.into());
+            }
+            x if x.len() > 39 => {
+                return Err(UserNameError::TooLong.into());
+            }
+            _ => {}
+        };
+
+        match user.password.clone() {
+            x if x.is_empty() => {
+                return Err(PasswordError::Blank.into());
+            }
+            x if x.len() < 8 => {
+                return Err(PasswordError::TooShort.into());
+            }
+            x if x.len() > 128 => {
+                return Err(PasswordError::TooLong.into());
+            }
+            _ => {}
+        };
+
         if let Ok(_) = User::exists("username", &user.username, pg).await {
-            return Err(anyhow!("user already exists").into());
+            return Err(UserNameError::Taken.into());
         }
         if let Some(email) = &user.email {
             if let Ok(_) = User::exists("email", &email, pg).await {
-                return Err(anyhow!("email already exists").into());
+                return Err(EmailError::Taken.into());
             }
         }
         let password_hash =
@@ -113,7 +136,7 @@ impl User {
             .await
             .context("failed to fetch user")?;
         if let None = id_pass.password_hash {
-            return Err(UserError::NoPasswordUser.into());
+            return Err(UserError::NoPassword.into());
         }
         let password_hash = pwhash::bcrypt::verify(&user.password, &id_pass.password_hash.unwrap());
         if !password_hash {
@@ -194,7 +217,7 @@ impl User {
         tracing::debug!(?query, key);
         match query.exists {
             Some(true) => Ok(()),
-            Some(false) => Err(anyhow!(format!("{} does not exist", key))),
+            Some(false) => Err(UserError::DoesNotExist.into()),
             None => Err(anyhow!("something went wrong")),
         }
     }

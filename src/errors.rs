@@ -55,6 +55,8 @@ impl IntoResponse for AppError {
 pub enum UserNameError {
     #[error("Username cannot be blank")]
     Blank,
+    #[error("Username is already taken")]
+    Taken,
     #[error("Username is too short")]
     TooShort,
     #[error("Username is too long")]
@@ -65,6 +67,8 @@ pub enum UserNameError {
 pub enum EmailError {
     #[error("Email cannot be blank")]
     Blank,
+    #[error("Email is already taken")]
+    Taken,
     #[error("Email is not valid")]
     NotValid,
 }
@@ -84,7 +88,7 @@ pub enum PasswordError {
 #[derive(Error, Debug)]
 pub enum UserError {
     #[error("User does not have a password")]
-    NoPasswordUser,
+    NoPassword,
     #[error("User does not exist")]
     DoesNotExist,
     #[error("Session id is not valid")]
