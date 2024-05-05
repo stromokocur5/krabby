@@ -5,8 +5,44 @@
 {% block content %}
 {% if base.logged_in %}
 <h1 class="mx-auto text-lg">New post</h1>
-<form action="/api/post/create" method="post" class="mx-auto">
+<form x-data="{files: 0}" action="/api/post/create" method="post" class="mx-auto">
   <input type="text" name="content" placeholder="Type here" class="input input-bordered w-full max-w-xs" />
+  <input @change="handle_files" type="file" name="file" class="" accept="image/* video/*" multiple />
 </form>
+<div id="preview">
+</div>
+
+<script>
+  function handle_files(e) {
+    const files = e.target.files;
+    const last = files[files.length - 1];
+    const last_size = last.size / 1024 / 1024;
+    const last_type = last.type;
+    if (files.length > 10) {
+      return;
+    }
+    if (last_size >= 5) {
+      return;
+    }
+    let form = document.querySelector("#preview");
+    let re_img = /image\/.*/;
+    let re_vid = /video\/.*/;
+    let elem = "";
+    if (last_type.match(re_img)) {
+      elem = "img"
+    }
+    if (last_type.match(re_vid)) {
+      elem = "video"
+    }
+    if (elem == "") {
+      files.pop()
+      return;
+    }
+    console.log(files)
+    const newPreview = document.createElement(elem);
+    newPreview.src = URL.createObjectURL(last)
+    form.appendChild(newPreview)
+  }
+</script>
 {% endif %}
 {% endblock %}

@@ -25,7 +25,7 @@ async fn create(
     base: Base,
     Form(post): Form<NewPost>,
 ) -> Result<impl IntoResponse, AppError> {
-    Post::create(&base.user.unwrap().id, &post.content, &app_state.pg).await?;
+    Post::create(&base.user.unwrap().id, &post, &app_state.pg).await?;
     Ok(Redirect::to("/"))
 }
 async fn delete(

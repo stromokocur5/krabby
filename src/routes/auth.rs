@@ -45,6 +45,12 @@ pub async fn auth(base: Base) -> impl IntoResponse {
             "".to_owned(),
         ));
         fields.push((
+            "email".to_owned(),
+            "test@email.com".to_owned(),
+            "".to_owned(),
+            "".to_owned(),
+        ));
+        fields.push((
             "password".to_owned(),
             "********".to_owned(),
             "required".to_owned(),

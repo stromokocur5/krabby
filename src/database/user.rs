@@ -106,35 +106,39 @@ impl User {
         }
         let password_hash =
             pwhash::bcrypt::hash(user.password.to_string()).context("failed to hash password")?;
-        let query = "
-            INSERT INTO app_user (username, password_hash,avatar_url)
-            VALUES ($1, $2,'/assets/ferris.png')
-            RETURNING id;
-            ";
 
-        let user_id = sqlx::query_as::<_, Id>(&query)
-            .bind(user.username.to_string())
-            .bind(password_hash)
-            .fetch_one(pg)
-            .await
-            .context("failed to fetch user")?;
+        let user_id = sqlx::query_as!(
+            Id,
+            "
+            INSERT INTO app_user (username, email, password_hash, avatar_url)
+            VALUES ($1, $2, $3, '/assets/ferris.png')
+            RETURNING id;
+         ",
+            user.username.to_string(),
+            user.email,
+            password_hash.clone()
+        )
+        .fetch_one(pg)
+        .await
+        .context("failed to fetch user")?;
         Ok(user_id.id)
     }
     pub async fn verify(user: &LogInUser, pg: &PgPool) -> Result<String, AppError> {
         if let Err(_) = User::exists("username", &user.username, pg).await {
             return Err(UserError::DoesNotExist.into());
         }
-        let query = format!(
-            "
-            SELECT id,password_hash FROM app_user WHERE username=$1;
-            ",
-        );
 
-        let id_pass = sqlx::query_as::<_, IdPass>(&query)
-            .bind(user.username.to_string())
-            .fetch_one(pg)
-            .await
-            .context("failed to fetch user")?;
+        let id_pass = sqlx::query_as!(
+            IdPass,
+            "
+            SELECT id,password_hash FROM app_user WHERE username=$1;    
+            ",
+            user.username
+        )
+        .fetch_one(pg)
+        .await
+        .context("failed to fetch user")?;
+        tracing::debug!("{:?}", id_pass.password_hash);
         if let None = id_pass.password_hash {
             return Err(UserError::NoPassword.into());
         }
@@ -218,7 +222,7 @@ impl User {
         match query.exists {
             Some(true) => Ok(()),
             Some(false) => Err(UserError::DoesNotExist.into()),
-            None => Err(anyhow!("something went wrong")),
+            None => Err(anyhow!("")),
         }
     }
     pub async fn create_session(user_id: &str, redis: &RedisPool) -> Result<String, AppError> {

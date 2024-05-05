@@ -1,8 +1,21 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, net::Ipv4Addr};
 
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
+use axum::http::{HeaderMap, HeaderValue};
 
 use crate::{get_env, Result};
+
+pub async fn get_ip(headers: &HeaderMap) -> Result<Ipv4Addr> {
+    let ip: Ipv4Addr = headers
+        .get("CF-Connecting-IP")
+        .unwrap_or(&HeaderValue::from_str("0.0.0.0").context("Header value parse error")?)
+        .to_str()
+        .context("Header value parse error")?
+        .to_owned()
+        .parse()
+        .context("Header value parse error")?;
+    Ok(ip)
+}
 
 pub async fn verify_turnstitle(token: &str, ip: std::net::IpAddr) -> Result<()> {
     #[derive(serde::Deserialize)]
