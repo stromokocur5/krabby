@@ -205,7 +205,13 @@ impl User {
         .await?;
         Ok(user)
     }
-    pub async fn update(user_id: &str, pg: &PgPool) -> Result<()> {
+    pub async fn update(user_id: &str, key: &str, value: &str, pg: &PgPool) -> Result<()> {
+        sqlx::query(format!("UPDATE app_user SET {} = $1 WHERE user_id = $2", key).as_str())
+            .bind(value)
+            .bind(user_id)
+            .execute(pg)
+            .await?;
+
         Ok(())
     }
     pub async fn delete(user_id: &str, pg: &PgPool) -> Result<()> {

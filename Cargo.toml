@@ -26,6 +26,8 @@ sqlx = { version = "0.7.3", features = ["postgres", "runtime-tokio", "time", "ch
 thiserror = "1.0.56"
 time = "0.3.34"
 tokio = { version = "1.35.1", features = ["full"] }
+tokio-stream = { version = "0.1.15", features = ["tokio-util", "io-util"] }
+tokio-util = { version = "0.7.11", features = ["io"] }
 tower = { version = "0.4.13", features = ["tokio"] }
 tower-http = { version = "0.5.0", features = ["fs", "trace"] }
 tracing = { version = "0.1.40", features = ["async-await"] }

@@ -1,5 +1,10 @@
-use axum::response::{IntoResponse, Redirect};
+use axum::{
+    body::Body,
+    response::{IntoResponse, Redirect, Response},
+};
 use axum_extra::extract::{cookie::Cookie, CookieJar};
+
+use crate::AppError;
 
 pub async fn logout() -> impl IntoResponse {
     let mut remove_user_id = Cookie::new("user_id", "");
