@@ -64,8 +64,9 @@
           <img src={{val.avatar_url}}>
         </div>
       </div>
-      <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 ">
+      <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
         <li class=""><a href={{format!(" /users/{}",val.username)}}>Profile</a></li>
+        <li class=""><a href="/settings">Settings</a></li>
         <li class=""><a href="/api/auth/logout">Logout</a></li>
       </ul>
     </div>

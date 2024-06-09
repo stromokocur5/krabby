@@ -26,14 +26,13 @@ pub fn router() -> Router<Arc<AppState>> {
 struct UserProfile {
     base: Base,
     user: User,
-    posts: Vec<Post>,
+    posts: Vec<crate::database::post::UserPost>,
 }
 #[derive(Template)]
 #[template(path = "routes/post.html")]
 struct UserPost {
     base: Base,
-    user: User,
-    post: Post,
+    post: crate::database::post::UserPost,
 }
 async fn user_profile(
     State(app_state): State<Arc<AppState>>,
@@ -61,10 +60,10 @@ async fn post(
 ) -> Result<impl IntoResponse, impl IntoResponse> {
     let user = User::get(format!("username='{username}'").as_str(), &app_state.pg).await;
     match user {
-        Ok(user) => {
+        Ok(_user) => {
             let post = Post::get(&post, &app_state.pg).await;
             if let Ok(post) = post {
-                return Ok(UserPost { base, user, post });
+                return Ok(UserPost { base, post });
             }
 
             return Err((axum::http::StatusCode::NOT_FOUND, NotFound { base }));
