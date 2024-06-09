@@ -11,11 +11,13 @@ mod auth;
 mod index;
 pub mod middleware;
 mod not_found;
+mod settings;
 mod users;
 
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(index::index))
+        .route("/settings", get(index::index))
         .merge(auth::router())
         .nest("/users", users::router())
         .nest("/api", api::router())
