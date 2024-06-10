@@ -17,8 +17,8 @@ mod users;
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(index::index))
-        .route("/settings", get(settings::settings))
         .merge(auth::router())
+        .route("/settings", get(settings::settings))
         .nest("/users", users::router())
         .nest("/api", api::router())
         .nest_service("/assets", ServeDir::new("assets"))

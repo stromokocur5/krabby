@@ -1,1 +1,33 @@
 {% extends "../base_nav_footer.html" %}
+
+
+{% block content %}
+<form class="card-body" action="/api/update/email" method="post">
+  <div class="form-control">
+    <label class="label">
+      {% match base.user %}
+      {% when Some with (val) %}
+      {% match val.email %}
+      {% when Some with (email) %}
+      <h1>current email: {{email}}</h1>
+      {% when None %}
+      {% endmatch %}
+      {% when None %}
+      {% endmatch %}
+      <span class="label-text">Email</span>
+    </label>
+    <input name="email" type="email" placeholder="new email" class="input input-bordered" />
+  </div>
+</form>
+
+<form class="card-body" action="/api/update/password" method="post">
+  <div class="form-control">
+    <label class="label">
+      <span class="label-text">Password</span>
+    </label>
+    <input name="current_pass" type="password" placeholder="current password" class="input input-bordered" />
+    <input name="new_pass" type="password" placeholder="new password" class="input input-bordered" />
+    <button type="submit">
+  </div>
+</form>
+{% endblock %}

@@ -128,7 +128,7 @@ impl Post {
             FROM app_post 
             JOIN app_user ON app_post.user_id = app_user.id 
             ORDER BY app_post.created_at DESC
-            LIMIT 50;
+            LIMIT 100;
             "#,
         )
         .fetch_all(pg)

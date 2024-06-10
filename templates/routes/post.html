@@ -12,7 +12,9 @@
             <img src={{post.avatar_url}}>
           </div>
         </div>
-        <h2 class="card-title">{{post.username}}</h2>
+        <a href="/users/{{post.username}}">
+          <h2 class="card-title">{{post.username}}</h2>
+        </a>
       </div>
       <h3>{{post.created_at.date()}}</h3>
       <p>{{post.content}}</p>

@@ -206,7 +206,7 @@ impl User {
         Ok(user)
     }
     pub async fn update(user_id: &str, key: &str, value: &str, pg: &PgPool) -> Result<()> {
-        sqlx::query(format!("UPDATE app_user SET {} = $1 WHERE user_id = $2", key).as_str())
+        sqlx::query(format!("UPDATE app_user SET {} = $1 WHERE id = $2", key).as_str())
             .bind(value)
             .bind(user_id)
             .execute(pg)
